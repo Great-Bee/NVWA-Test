@@ -25,4 +25,5 @@ public interface ResponseConstant
     public static final String URL_Custom_Script_Read = "/nvwaUser/code/";
     public static final String URL_Layout="/nvwaUser/layout";
     public static final String URL_Container_Add = "/nvwa/container/add";
+    public static final String URL_Security="/nvwaUser/security";
 }

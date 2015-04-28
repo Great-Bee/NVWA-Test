@@ -34,6 +34,9 @@ import java.util.Set;
  */
 public class NVWAHttp implements ResponseConstant
 {
+
+    public static String validateCode = null;
+
     /**
      * Invoke
      *
@@ -88,13 +91,33 @@ public class NVWAHttp implements ResponseConstant
     }
 
     /**
+     * Get  返回httpClient
+     *  主要用于测试验证码,因为验证码是存在session里面的
+     * @param url
+     * @return
+     */
+    public static HttpClient getReturnClient(String url)
+    {
+        HttpClient httpClient = new DefaultHttpClient();
+        String response = invoke(httpClient, new HttpGet(url));
+        int start = response.indexOf("{\"ok\"");
+        String tempRes = response.substring(start,response.length());
+        JSONObject resJson = JSONObject.fromObject(tempRes);
+        if(resJson.containsKey("dataMap")){
+            validateCode = resJson.getJSONObject("dataMap").getString("validateCode");
+        }
+    //    httpClient.getConnectionManager().shutdown();
+        return httpClient;
+    }
+
+    /**
      * POST
      *
      * @param url
      * @param params
      * @return
      */
-    private static NVWAResponse post(HttpClient httpClient, String url, Map<String, String> params)
+    public static NVWAResponse post(HttpClient httpClient, String url, Map<String, String> params)
     {
         HttpPost httpost = new HttpPost(url);
         List<NameValuePair> nvps = new ArrayList<NameValuePair>();
@@ -232,5 +255,7 @@ public class NVWAHttp implements ResponseConstant
 
         return nvwaResponse;
     }
+
+
 }
 

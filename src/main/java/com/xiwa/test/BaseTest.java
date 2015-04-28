@@ -12,7 +12,7 @@ import com.xiwa.test.bean.NVWAResponse;
 import com.xiwa.test.bean.ResponseConstant;
 import com.xiwa.test.bean.TestOI;
 import com.xiwa.test.util.NVWAHttp;
-import org.GNOME.Bonobo.FIELD_CONTENT_TYPE;
+//import org.GNOME.Bonobo.FIELD_CONTENT_TYPE;
 
 /**
  * 基础类
