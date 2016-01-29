@@ -22,6 +22,7 @@ public interface ResponseConstant
     public static final String URL_OI_Unique="/nvwa/oi/unique";
     public static final String URL_Field_Add="/nvwa/field/add";
     public static final String URL_Custom_Script_Add="/nvwa/customScripts/add";
+    public static final String URL_Custom_Script_Delete="/nvwa/customScripts/delete";
     public static final String URL_Custom_Script_Read = "/nvwaUser/code/";
     public static final String URL_Layout="/nvwaUser/layout";
     public static final String URL_Container_Add = "/nvwa/container/add";

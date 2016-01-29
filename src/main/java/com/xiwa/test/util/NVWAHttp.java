@@ -246,6 +246,8 @@ public class NVWAHttp implements ResponseConstant
             }
             else {
                 System.out.println("逻辑业务测试失败");
+                nvwaResponse.setOk(false);
+                nvwaResponse.setBody(response);
             }
         }
         catch (JSONException e) {
