@@ -2,6 +2,7 @@ package com.xiwa.test.testcase.U00001;
 
 import com.xiwa.nvwa.bean.CustomScript;
 import com.xiwa.test.BaseTest;
+import com.xiwa.test.base.BaseTestCase;
 import com.xiwa.test.bean.NVWAResponse;
 import com.xiwa.test.bean.ResponseConstant;
 import com.xiwa.test.util.NVWAHttp;
@@ -17,7 +18,7 @@ import java.util.UUID;
  * 脚本读取接口
  * Created by xiaobc on 16/1/29.
  */
-public class CaseU00001003 extends BaseTest {
+public class CaseU00001003 extends BaseTestCase {
 
     private static final Logger logger = Logger.getLogger(CaseU00001003.class);
 
