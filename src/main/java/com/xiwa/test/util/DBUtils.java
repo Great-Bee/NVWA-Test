@@ -70,9 +70,9 @@ public final class DBUtils {
             return i;
         } catch (SQLException e) {
             e.printStackTrace();
+            return null;
         } finally {
             DBUtils.closeResources(conn,ps,null);
-            return null;
         }
     }
 
