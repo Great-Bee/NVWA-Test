@@ -11,12 +11,13 @@ import org.junit.Test;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.UUID;
 
 /**
  * 脚本读取接口
  * Created by xiaobc on 16/1/29.
  */
-public class CaseU00003006 extends BaseTestCase {
+public class CaseU00003012 extends BaseTestCase {
 
 //    private static final Logger logger = Logger.getLogger(CaseU00002001.class);
 
@@ -34,7 +35,7 @@ public class CaseU00003006 extends BaseTestCase {
     }
 
     @Test
-    public void testCaseU00003006(){
+    public void testCaseU00003012(){
         logger.info("----------------------test start-------------------------");
         try{
             this.mainTest();
@@ -44,11 +45,15 @@ public class CaseU00003006 extends BaseTestCase {
         }
         logger.info("----------------------test end-------------------------");
     }
+
+    /**
+     * 如果 ID 设置成随机的字符串，请求不会进入 read方法   所以测试无效
+     */
     private void mainTest(){
         //读取这个JS File 是否存在
-        String url = ResponseConstant.HOST + URL_User_Read+"/api/"+formContainer.getAlias()+"/"+dataIdListA.get(0);
+        String url = ResponseConstant.HOST + URL_User_Read+"/api/"+ formContainer.getAlias() +"/"+UUID.randomUUID().toString();//dataIdListA.get(0)
         Map<String,String> requestMap = new HashMap<String, String>();
-        requestMap.put("token",Token);
+        requestMap.put("token", Token);
         //发送get请求
         NVWAResponse nvwaResponse = NVWAHttp.sendProducerAuthPostRequest(url, requestMap);
 
@@ -75,7 +80,7 @@ public class CaseU00003006 extends BaseTestCase {
         } else {
             //返回的response为空
             //test false
-            logger.info("[testCaseU00003006][testCaseU00003006]: response is null");
+            logger.info("[testCaseU00003012][testCaseU00003012]: response is null");
         }
     }
 

@@ -346,7 +346,7 @@ public class BaseTestCase extends BaseTest {
                 "values('xiaobc','123123123',"+dataIdListB.get(0)+")";
         System.out.println(insertSql);
         Object id = DBUtils.insertAndDeleteData(insertSql,true);
-        dataIdListA.add(DataUtil.getInt(id,0));
+        dataIdListA.add(DataUtil.getInt(id, 0));
 
         insertSql = "insert into "+oi.getTableName()+"(name,tel,fId) "+
                 "values('xiaobc2','2123123123',"+dataIdListB.get(0)+")";
@@ -544,6 +544,13 @@ public class BaseTestCase extends BaseTest {
         Object o = DBUtils.insertAndDeleteData(deleteSql.toString());
         System.out.println("删除  oi 结束。。。。");
 
+        this.deleteOi2();
+    }
+
+    /**
+     * 删除 oi2
+     */
+    protected void deleteOi2(){
         //删除 oi2
         StringBuilder deleteSql2 = new StringBuilder("delete from xiwa_nvwa_oi where id="+oi2.getId());
         System.out.println(deleteSql2);
@@ -614,91 +621,6 @@ public class BaseTestCase extends BaseTest {
         appConfigId = 0;
     }
 
-
-
-
-/**
-     **************************下面的接口请求构造数据   目前 直接用上面的sql造数据*****************************
-*/
-
-    /**
-     * 添加OI
-     * id(INT)，name(varchar)，tel(varchar)，
-     */
-    public void addOi(){
-        String url = ResponseConstant.HOST + "/nvwa/oi/add";
-        Map<String, String> postData = new HashMap<String, String>();
-        postData.put("name", "caseTest");
-        postData.put("description","test");
-        postData.put("isSyncSchema", "true");
-        oi = (OI) this.mapToObject(OI.class,postData);
-
-        NVWAResponse nvwaResponse = NVWAHttp.sendProducerAuthPostRequest(url, postData);
-
-        System.out.println(nvwaResponse.isOk());
-        JSONObject dataMap = nvwaResponse.getDataMap();
-        System.out.println(dataMap.toString());
-
-        if(dataMap.containsKey("id")){
-            oi.setId(DataUtil.getInt(dataMap.get("id"),0));
-        }
-    }
-
-    /**
-     * 删除Oi
-     * 根据id删除刚才创建的oi
-     */
-    public void deleteOiTest(){
-        String url = ResponseConstant.HOST + "/nvwa/oi/delete";
-        Map<String, String> postData = new HashMap<String, String>();
-        //    postData.put("id", DataUtil.getString(oi.getId(),null));
-        postData.put("id", "5");
-
-        NVWAResponse nvwaResponse = NVWAHttp.sendProducerAuthPostRequest(url, postData);
-
-        System.out.println(nvwaResponse.isOk());
-        JSONObject dataMap = nvwaResponse.getDataMap();
-        System.out.println(dataMap.toString());
-    }
-
-    /**
-     * map 转换成 object对象
-     *
-     * @param map
-     * @return
-     */
-    protected Object mapToObject(Class type, Map<String, String> map) {
-        Object obj = null;
-        try {
-            BeanInfo beanInfo = Introspector.getBeanInfo(type);// 获取类属性
-            obj = type.newInstance(); // 创建 JavaBean 对象
-            // 给 JavaBean 对象的属性赋值
-            PropertyDescriptor[] propertyDescriptors = beanInfo.getPropertyDescriptors();
-            for (int i = 0; i < propertyDescriptors.length; i++) {
-                PropertyDescriptor descriptor = propertyDescriptors[i];
-                String propertyName = descriptor.getName();
-
-                if (map.containsKey(propertyName)) {
-                    // 下面一句可以 try 起来，这样当一个属性赋值失败的时候就不会影响其他属性赋值。
-                    Object value = map.get(propertyName);
-
-                    Object[] args = new Object[1];
-                    args[0] = value;
-
-                    descriptor.getWriteMethod().invoke(obj, args);
-                }
-            }
-        } catch (IntrospectionException e) {
-            e.printStackTrace();
-        } catch (InvocationTargetException e) {
-            e.printStackTrace();
-        } catch (InstantiationException e) {
-            e.printStackTrace();
-        } catch (IllegalAccessException e) {
-            e.printStackTrace();
-        }
-        return obj;
-    }
 
 
 }
