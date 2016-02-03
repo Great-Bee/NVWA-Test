@@ -1,8 +1,6 @@
 package com.xiwa.test.base;
 
-import com.google.gson.JsonArray;
 import com.xiwa.base.util.DataUtil;
-import com.xiwa.base.util.StringUtil;
 import com.xiwa.nvwa.bean.*;
 import com.xiwa.test.BaseTest;
 import com.xiwa.test.bean.NVWAResponse;
@@ -10,27 +8,24 @@ import com.xiwa.test.bean.ResponseConstant;
 import com.xiwa.test.util.DBUtils;
 import com.xiwa.test.util.NVWAHttp;
 import net.sf.json.JSONObject;
+import org.apache.log4j.Logger;
 import org.junit.Test;
-import sun.jvm.hotspot.ci.ciObjArrayKlass;
 
 import java.beans.BeanInfo;
 import java.beans.IntrospectionException;
 import java.beans.Introspector;
 import java.beans.PropertyDescriptor;
 import java.lang.reflect.InvocationTargetException;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Created by xiaobc on 16/1/30.
  */
 public class BaseTestCase extends BaseTest {
 
+    protected static final Logger logger = Logger.getLogger(BaseTestCase.class);
+
+    protected static final String Token = UUID.randomUUID().toString();
     //缓存OI
     protected OI oi = new OI();
     //缓存OI2
@@ -55,10 +50,30 @@ public class BaseTestCase extends BaseTest {
     protected Condition condition = new Condition();
     //当前去 id 为测试field
     protected Field nameField = new Field();
+    //返回插入的oi数据主键list
+    protected List<Integer> dataIdListA = new ArrayList<Integer>();
+    //返回插入的oi数据主键list
+    protected List<Integer> dataIdListB = new ArrayList<Integer>();
 
     //连接的 id 为测试field
     protected Field fIdField = new Field();
+    //缓存服务器属性
+    protected ElementServerAttribute serverAttrForm = new ElementServerAttribute();
+    //缓存服务器属性
+    protected ElementServerAttribute serverAttrGrid = new ElementServerAttribute();
+    //缓存 创建的服务器token
+    protected Integer appConfigId = 0;
 
+    /**
+     * 初始化 token
+     */
+    protected void buildAppConfig(){
+        String sql = "insert into xiwa_nvwa_api_config(name,appName,appType,alias,token,createDate) " +
+                "values('demo','demo','web','demo','"+Token+"','2016-01-01 12:23:23');";
+        Object o = DBUtils.insertAndDeleteData(sql);
+        System.out.println("插入 app Token  结束。。。。");
+        appConfigId = DataUtil.getInt(o,0);
+    }
     /**
      * 初始化数据 oi
      */
@@ -73,7 +88,7 @@ public class BaseTestCase extends BaseTest {
                 " tel VARCHAR(64), " +
                 " fId int(11))";
 
-        Object o = DBUtils.insertAndDeleteData(createTableSql);
+        Object o = DBUtils.insertAndDeleteData(createTableSql,true);
         System.out.println("建表结束。。。。");
 
         String insertDataSql = "insert into xiwa_nvwa_oi(name,identified,tableName,status,createDate) "+
@@ -82,7 +97,7 @@ public class BaseTestCase extends BaseTest {
         Object o2 = DBUtils.insertAndDeleteData(insertDataSql);
         System.out.println("插入oi结束。。。。");
 
-        oi.setId(DataUtil.getInt(o2,0));
+        oi.setId(DataUtil.getInt(o2, 0));
     }
 
     /**
@@ -90,8 +105,8 @@ public class BaseTestCase extends BaseTest {
      */
     protected void buildFieldAfterOi(){
 
-        String fieldSqlId = "insert into xiwa_nvwa_field(name,fieldName,notNull,oiIdentified,dataTypeField,length,serialNumber) "+
-                "values('ID','id',0,'"+oi.getIdentified()+"','INT',11,'Field_id_123123123123123')";
+        String fieldSqlId = "insert into xiwa_nvwa_field(name,fieldName,notNull,oiIdentified,dataTypeField,length,serialNumber,decimalLength) "+
+                "values('ID','id',0,'"+oi.getIdentified()+"','INT',11,'Field_id_123123123123123',0)";
         System.out.println(fieldSqlId);
         Object o = DBUtils.insertAndDeleteData(fieldSqlId);
         System.out.println("插入Field A 结束。。。。");
@@ -100,23 +115,23 @@ public class BaseTestCase extends BaseTest {
         nameField.setId(DataUtil.getInt(o, 0));
         nameField.setSerialNumber("Field_id_123123123123123");
 
-        String fieldSqlName = "insert into xiwa_nvwa_field(name,fieldName,notNull,oiIdentified,dataTypeField,length,serialNumber) "+
-                "values('name','name',1,'"+oi.getIdentified()+"','VARCHAR',64,'Field_id_123123asqw23123')";
+        String fieldSqlName = "insert into xiwa_nvwa_field(name,fieldName,notNull,oiIdentified,dataTypeField,length,serialNumber,decimalLength) "+
+                "values('name','name',1,'"+oi.getIdentified()+"','VARCHAR',64,'Field_id_123123asqw23123',0)";
         System.out.println(fieldSqlName);
         Object o2 = DBUtils.insertAndDeleteData(fieldSqlName);
         System.out.println("插入Field B 结束。。。。");
         fieldIdList.add(DataUtil.getInt(o2, 0));
 
 
-        String fieldSqlTel = "insert into xiwa_nvwa_field(name,fieldName,notNull,oiIdentified,dataTypeField,length,serialNumber) "+
-                "values('tel','tel',1,'"+oi.getIdentified()+"','VARCHAR',64,'Field_id_12dfgd3asqw23123')";
+        String fieldSqlTel = "insert into xiwa_nvwa_field(name,fieldName,notNull,oiIdentified,dataTypeField,length,serialNumber,decimalLength) "+
+                "values('tel','tel',1,'"+oi.getIdentified()+"','VARCHAR',64,'Field_id_12dfgd3asqw23123',0)";
         System.out.println(fieldSqlTel);
         Object o3 = DBUtils.insertAndDeleteData(fieldSqlTel);
         System.out.println("插入Field C 结束。。。。");
         fieldIdList.add(DataUtil.getInt(o3, 0));
 
-        String fieldSqlFid = "insert into xiwa_nvwa_field(name,fieldName,notNull,oiIdentified,dataTypeField,length,serialNumber) "+
-                "values('fId','fId',1,'"+oi.getIdentified()+"','INT',11,'Field_id_12dfgd3asfhjghj3')";
+        String fieldSqlFid = "insert into xiwa_nvwa_field(name,fieldName,notNull,oiIdentified,dataTypeField,length,serialNumber,decimalLength) "+
+                "values('fId','fId',1,'"+oi.getIdentified()+"','INT',11,'Field_id_12dfgd3asfhjghj3',0)";
         System.out.println(fieldSqlFid);
         Object o4 = DBUtils.insertAndDeleteData(fieldSqlFid);
         System.out.println("插入Field D 结束。。。。");
@@ -136,7 +151,7 @@ public class BaseTestCase extends BaseTest {
                 "(id int(11) primary key not NULL auto_increment, " +
                 " score VARCHAR(64))";
 
-        Object o = DBUtils.insertAndDeleteData(createTableSql);
+        Object o = DBUtils.insertAndDeleteData(createTableSql,true);
         System.out.println("建表结束。。。。");
 
         String insertDataSql = "insert into xiwa_nvwa_oi(name,identified,tableName,status,createDate) "+
@@ -152,8 +167,8 @@ public class BaseTestCase extends BaseTest {
      * 添加完oiB后 添加字段
      */
     protected void buildFieldAfterOi2(){
-        String fieldSqlId = "insert into xiwa_nvwa_field(name,fieldName,notNull,oiIdentified,dataTypeField,length,serialNumber) "+
-                "values('ID','id',0,'"+oi2.getIdentified()+"','INT',11,'Field_id_321123123123123')";
+        String fieldSqlId = "insert into xiwa_nvwa_field(name,fieldName,notNull,oiIdentified,dataTypeField,length,serialNumber,decimalLength) "+
+                "values('ID','id',0,'"+oi2.getIdentified()+"','INT',11,'Field_id_321123123123123',0)";
         System.out.println(fieldSqlId);
         Object o = DBUtils.insertAndDeleteData(fieldSqlId);
         System.out.println("插入Field E 结束。。。。");
@@ -162,8 +177,8 @@ public class BaseTestCase extends BaseTest {
         fIdField.setId(DataUtil.getInt(o, 0));
         fIdField.setSerialNumber("Field_id_321123123123123");
 
-        String fieldSqlScore = "insert into xiwa_nvwa_field(name,fieldName,notNull,oiIdentified,dataTypeField,length,serialNumber) "+
-                "values('score','score',1,'"+oi2.getIdentified()+"','VARCHAR',64,'Field_id_12kjl23asqw23123')";
+        String fieldSqlScore = "insert into xiwa_nvwa_field(name,fieldName,notNull,oiIdentified,dataTypeField,length,serialNumber,decimalLength) "+
+                "values('score','score',1,'"+oi2.getIdentified()+"','VARCHAR',64,'Field_id_12kjl23asqw23123',0)";
         System.out.println(fieldSqlScore);
         Object o2 = DBUtils.insertAndDeleteData(fieldSqlScore);
         System.out.println("插入Field F 结束。。。。");
@@ -180,7 +195,7 @@ public class BaseTestCase extends BaseTest {
         Object o2 = DBUtils.insertAndDeleteData(sql);
         System.out.println("插入 connector 结束。。。。");
 
-        connector.setId(DataUtil.getInt(o2,0));
+        connector.setId(DataUtil.getInt(o2, 0));
     }
 
     /**
@@ -248,12 +263,29 @@ public class BaseTestCase extends BaseTest {
         System.out.println("插入 form  element 结束。。。。");
         elementsIdList.add(DataUtil.getInt(o, 0));
 
+        //添加 element的服务器属性
+        String elementsAttrFormSql = "insert into xiwa_nvwa_element_server_attribute(elementId,fieldName) "+
+                "values("+elementsIdList.get(0)+",'id')";
+        System.out.println(elementsAttrFormSql);
+        Object o3 = DBUtils.insertAndDeleteData(elementsAttrFormSql);
+        System.out.println("插入 form  element  server attribute 结束。。。。");
+        serverAttrForm.setId(DataUtil.getInt(o3, 0));
+
+
         String elementsGridSql = "insert into xiwa_nvwa_element(containerId,name,componentAlias,serialNumber,pageId,fieldSerialNumber) "+
                 "values("+gridContianer.getId()+",'1-grid','text','Element_1231dssq',0,'"+nameField.getSerialNumber()+"')";
         System.out.println(elementsGridSql);
         Object o2 = DBUtils.insertAndDeleteData(elementsGridSql);
         System.out.println("插入 form  element 结束。。。。");
         elementsIdList.add(DataUtil.getInt(o2, 0));
+
+        //添加 element的服务器属性
+        String elementsAttrGridSql = "insert into xiwa_nvwa_element_server_attribute(elementId,fieldName) "+
+                "values("+elementsIdList.get(1)+",'id')";
+        System.out.println(elementsAttrGridSql);
+        Object o4 = DBUtils.insertAndDeleteData(elementsAttrGridSql);
+        System.out.println("插入 form  element  server attribute 结束。。。。");
+        serverAttrGrid.setId(DataUtil.getInt(o4, 0));
     }
 
     /**
@@ -294,30 +326,49 @@ public class BaseTestCase extends BaseTest {
         condition.setId(DataUtil.getInt(i, 0));
     }
 
+
+    /**
+     * 插入 新表数据
+     */
+    protected void buildOiDataOi2(){
+        String insertSql = "insert into "+oi2.getTableName()+"(score) "+
+                "values('100')";
+        System.out.println(insertSql);
+        Object id = DBUtils.insertAndDeleteData(insertSql,true);
+        dataIdListB.add(DataUtil.getInt(id, 0));
+    }
+
     /**
      * 插入 新表数据
      */
     protected void buildOiData(){
-        String insertSql = "insert into "+oi.getTableName()+"(name,tel) "+
-                "values('xiaobc','123123123')";
+        String insertSql = "insert into "+oi.getTableName()+"(name,tel,fId) "+
+                "values('xiaobc','123123123',"+dataIdListB.get(0)+")";
         System.out.println(insertSql);
-        DBUtils.insertAndDeleteData(insertSql);
+        Object id = DBUtils.insertAndDeleteData(insertSql,true);
+        dataIdListA.add(DataUtil.getInt(id,0));
 
-        insertSql = "insert into "+oi.getTableName()+"(name,tel) "+
-                "values('xiaobc2','2123123123')";
+        insertSql = "insert into "+oi.getTableName()+"(name,tel,fId) "+
+                "values('xiaobc2','2123123123',"+dataIdListB.get(0)+")";
         System.out.println(insertSql);
-        DBUtils.insertAndDeleteData(insertSql);
+        Object id2 = DBUtils.insertAndDeleteData(insertSql,true);
+        dataIdListA.add(DataUtil.getInt(id2, 0));
 
-        insertSql = "insert into "+oi.getTableName()+"(name,tel) "+
-                "values('xiaobc3','3123123123')";
+        insertSql = "insert into "+oi.getTableName()+"(name,tel,fId) "+
+                "values('xiaobc3','3123123123',"+dataIdListB.get(0)+")";
         System.out.println(insertSql);
-        DBUtils.insertAndDeleteData(insertSql);
+        Object id3 = DBUtils.insertAndDeleteData(insertSql,true);
+        dataIdListA.add(DataUtil.getInt(id3, 0));
+
     }
 
     /**
      * 测试前的数据准备
      */
     public void createData(){
+
+        this.buildAppConfig();
+
         this.buildOi();
 
         this.buildFieldAfterOi();
@@ -337,6 +388,8 @@ public class BaseTestCase extends BaseTest {
         this.buildElementLayout();
 
         this.buildCondition();
+
+        this.buildOiDataOi2();
 
         this.buildOiData();
 
@@ -372,6 +425,10 @@ public class BaseTestCase extends BaseTest {
         this.deleteConnector();
 
         this.deleteCondition();
+
+        this.clearCache();
+
+        this.deleteAppConfig();
     }
 
     /**
@@ -408,6 +465,11 @@ public class BaseTestCase extends BaseTest {
         System.out.println(deleteSql.toString());
         Object o = DBUtils.insertAndDeleteData(deleteSql.toString());
         System.out.println("删除  element 结束。。。。");
+
+        StringBuilder deleteSql2 = new StringBuilder("delete from xiwa_nvwa_element_server_attribute where id in ("+serverAttrForm.getId()+","+serverAttrGrid.getId()+")");
+        System.out.println(deleteSql2.toString());
+        Object o2 = DBUtils.insertAndDeleteData(deleteSql2.toString());
+        System.out.println("删除  element server attribulte 结束。。。。");
     }
 
     /**
@@ -454,12 +516,12 @@ public class BaseTestCase extends BaseTest {
     protected void deleteTable(){
         StringBuilder deleteSql = new StringBuilder("DROP TABLE "+oi.getTableName());
         System.out.println(deleteSql);
-        Object o = DBUtils.insertAndDeleteData(deleteSql.toString());
+        Object o = DBUtils.insertAndDeleteData(deleteSql.toString(),true);
         System.out.println("清除 table 结束。。。。");
 
         StringBuilder deleteSql2 = new StringBuilder("DROP TABLE "+oi2.getTableName());
         System.out.println(deleteSql2);
-        Object o2 = DBUtils.insertAndDeleteData(deleteSql2.toString());
+        Object o2 = DBUtils.insertAndDeleteData(deleteSql2.toString(),true);
         System.out.println("清除 table2 结束。。。。");
     }
 
@@ -467,7 +529,7 @@ public class BaseTestCase extends BaseTest {
      * 删除条件
      */
     protected void deleteCondition(){
-        StringBuilder deleteSql = new StringBuilder("delete from xiwa_nvwa_condition where id="+condition.getId());
+        StringBuilder deleteSql = new StringBuilder("delete from xiwa_nvwa_condition where id="+ condition.getId());
         System.out.println(deleteSql);
         Object o = DBUtils.insertAndDeleteData(deleteSql.toString());
         System.out.println("删除  condition 结束。。。。");
@@ -499,12 +561,66 @@ public class BaseTestCase extends BaseTest {
         System.out.println("删除  connector 结束。。。。");
     }
 
-
-
-
-    /******
-     * *************************下面的接口请求构造数据   目前 直接用上面的sql造数据*****************************
+    /**
+     * 删除 appConfig
      */
+    protected void deleteAppConfig(){
+        StringBuilder deleteSql = new StringBuilder("delete from xiwa_nvwa_api_config where id="+appConfigId);
+        System.out.println(deleteSql);
+        Object o = DBUtils.insertAndDeleteData(deleteSql.toString());
+        System.out.println("删除 app config 结束。。。。");
+
+    }
+
+    /**
+     * 清除缓存
+     */
+    protected void clearCache(){
+        //缓存OI
+        oi = new OI();
+        //缓存OI2
+        oi2 = new OI();
+        //缓存 连接器
+       connector = new Connector();
+        //缓存page
+        formPage = new Page();
+        //缓存page
+        gridPage = new Page();
+        //缓存 form container
+        formContainer = new Container();
+        //缓存 grid container
+        gridContianer = new Container();
+        //缓存
+        fieldIdList = new ArrayList<Integer>();
+        //缓存 元素id列表
+        elementsIdList = new ArrayList<Integer>();
+        //缓存  元素layout id 列表
+         elementsLayoutIdList = new ArrayList<Integer>();
+        //缓存  condition
+        condition = new Condition();
+        //当前去 id 为测试field
+        nameField = new Field();
+        //返回插入的oi数据主键list
+        dataIdListA = new ArrayList<Integer>();
+        //返回插入的oi数据主键list
+        dataIdListB = new ArrayList<Integer>();
+        //连接的 id 为测试field
+        fIdField = new Field();
+        //缓存服务器属性
+        serverAttrForm = new ElementServerAttribute();
+        //缓存服务器属性
+        serverAttrGrid = new ElementServerAttribute();
+
+        appConfigId = 0;
+    }
+
+
+
+
+/**
+     **************************下面的接口请求构造数据   目前 直接用上面的sql造数据*****************************
+*/
+
     /**
      * 添加OI
      * id(INT)，name(varchar)，tel(varchar)，

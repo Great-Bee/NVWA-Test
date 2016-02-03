@@ -10,10 +10,12 @@ import java.sql.*;
 public final class DBUtils {
 
     private static String url = "jdbc:mysql://localhost:3306/nvwa_configs";
+    private static String url_data = "jdbc:mysql://localhost:3306/nvwa_data";
     private static String user = "root";
     private static String psw = "";
 
     private static Connection conn;
+    private static Connection connOfData;
 
     static {
         try {
@@ -45,12 +47,59 @@ public final class DBUtils {
         return conn;
     }
 
+    /**
+     * 获取数据库的连接   nvwa_data
+     *
+     * @return conn
+     */
+    public static Connection getConnectionOfData() {
+        if (null == connOfData) {
+            try {
+                connOfData = DriverManager.getConnection(url_data, user, psw);
+            } catch (SQLException e) {
+                e.printStackTrace();
+                throw new RuntimeException(e);
+            }
+        }
+        return connOfData;
+    }
+
 
     /**
      * 创建数据  删除数据
      */
-    public static Object insertAndDeleteData(String sql){
+    public static Object insertAndDeleteData(String sql,boolean args){
+        Connection conn = DBUtils.getConnectionOfData();
+        //兼容前面的非nvwa_data数据库的数据
+        PreparedStatement ps = null;
+//        String sql = "insert into person(name,birthday,sex) values(?,?,?)";
+        try {
+            ps = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+            int i = ps.executeUpdate();
 
+            // 检索由于执行此 Statement 对象而创建的所有自动生成的键
+            ResultSet rs = ps.getGeneratedKeys();
+            if (rs.next()) {
+                Long id = rs.getLong(1);
+                System.out.println("数据主键：" + id);
+                if(id>0){
+                    return id;
+                }
+            }
+            return i;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return null;
+        } finally {
+            DBUtils.closeResources(conn,ps,null);
+        }
+    }
+
+    /**
+     * 创建数据  删除数据
+     */
+
+    public static Object insertAndDeleteData(String sql){
         Connection conn = DBUtils.getConnection();
         PreparedStatement ps = null;
 //        String sql = "insert into person(name,birthday,sex) values(?,?,?)";

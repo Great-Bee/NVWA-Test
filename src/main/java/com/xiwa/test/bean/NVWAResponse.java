@@ -13,7 +13,7 @@ public class NVWAResponse
 {
     private boolean ok;
     private JSONObject dataMap;
-
+    private String message;
     String body;
 
     public boolean isOk()
@@ -45,5 +45,13 @@ public class NVWAResponse
     public void setBody(String body)
     {
         this.body = body;
+    }
+
+    public String getMessage() {
+        return message;
+    }
+
+    public void setMessage(String message) {
+        this.message = message;
     }
 }

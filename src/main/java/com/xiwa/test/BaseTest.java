@@ -12,6 +12,7 @@ import com.xiwa.test.bean.NVWAResponse;
 import com.xiwa.test.bean.ResponseConstant;
 import com.xiwa.test.bean.TestOI;
 import com.xiwa.test.util.NVWAHttp;
+import junit.framework.TestCase;
 //import org.GNOME.Bonobo.FIELD_CONTENT_TYPE;
 
 /**
@@ -20,7 +21,7 @@ import com.xiwa.test.util.NVWAHttp;
  * @author CarlChen
  * @version 1.00 14-12-12 下午11:44
  */
-public class BaseTest implements ResponseConstant {
+public class BaseTest extends TestCase implements ResponseConstant {
     /**
      * 初始化
      */

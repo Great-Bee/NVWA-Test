@@ -146,12 +146,15 @@ public class NVWAHttp implements ResponseConstant
                 //开始执行测试用例返回结果的判断
                 nvwaResponse.setOk(responseJSON.getBoolean(OK));
                 nvwaResponse.setDataMap(dataMap);
+                nvwaResponse.setMessage(responseJSON.get("message").toString());
             }
         }
         else {
             System.out.println("test false:" + url);
             System.out.println(responseJSON.toString());
             nvwaResponse.setOk(responseJSON.getBoolean(OK));
+            nvwaResponse.setMessage(responseJSON.get("message").toString());
+            nvwaResponse.setDataMap(responseJSON.getJSONObject("dataMap"));
         }
 
         return nvwaResponse;
